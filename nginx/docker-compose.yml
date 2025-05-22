@@ -1,0 +1,19 @@
+version: "3"
+services:
+  lbaas-ui:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+    depends_on:
+      - lbaas-ui
+

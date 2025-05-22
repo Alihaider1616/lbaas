@@ -1,0 +1,31 @@
+name: Deploy Load Balancer UI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup SSH Key
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Copy files to server
+      run: |
+        rsync -avz -e ssh ./ ${{ secrets.USER }}@${{ secrets.HOST }}:/opt/lbaas
+
+    - name: SSH and restart service
+      run: |
+        ssh ${{ secrets.USER }}@${{ secrets.HOST }} <<EOF
+          cd /opt/lbaas
+          docker-compose down
+          docker-compose up -d --build
+        EOF
+
